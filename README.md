@@ -41,3 +41,12 @@
 
 * `demo.py`：使用训练出的模型来完成追踪任务，需要指定训练模型的路径和测试数据的路径
 
+## 数据集
+
+### [OTB2015](http://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.htmlhttp://cvlab.hanyang.ac.kr/tracker_benchmark/datasets.html)
+
+可以下几个跑试试看，例如把几个文件夹放在一个大文件下
+
+### [GOT-10k](https://opendatalab.com/GOT-10k/cli)
+
+完整数据集66G，比较大

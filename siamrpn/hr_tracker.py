@@ -5,7 +5,9 @@ import torch.nn.functional as F
 import time
 import torchvision.transforms as transforms
 from siamrpn.hrsiam import HRSiamRPNNet
+from siamrpn.kalman_filter import KalmanFilter
 from siamrpn.config import config
+from siamrpn.GMM import GMM
 from torchvision.transforms import transforms
 from siamrpn.utils import generate_anchors, get_exemplar_image, get_instance_image, box_transform_inv,show_image
 
@@ -51,6 +53,14 @@ class HRSiamRPNTracker():
         #获取模板图像
         #返回127x127x3大小的图像、127/上下文信息
         exemplar_img, scale_z, _ = get_exemplar_image(frame, self.bbox,config.exemplar_size, config.context_amount, self.img_mean)
+        #返回255x255x3大小的图像，初始化GMM
+        instance_img_np, _, _, _ = get_instance_image(frame, self.bbox, config.exemplar_size,  config.instance_size, config.context_amount, self.img_mean)
+        self.gmm = GMM(instance_img_np)
+        # 初始化卡尔曼滤波器
+        self.kf = KalmanFilter()
+        [x,y,w,h] = self.bbox
+        a=w/h
+        self.mean, self.covariance = self.kf.initiate([x,y,a,h])
         #增加一个batch维度再输入网络
         exemplar_img = self.transforms(exemplar_img)[None, :, :, :]
         self.model.track_init(exemplar_img.cuda())
@@ -108,6 +118,10 @@ class HRSiamRPNTracker():
         best_pscore_id = np.argmax(pscore) #返回最大得分的索引id
         """-------------------------------------"""
 
+        """---使用混合高斯模型检测-------"""
+        # 返回ltwh 左上&长宽
+        gmm_bbox = self.gmm.update(instance_img_np)
+
         """---------得到新的目标状态信息用于更新-----------------------------"""
         #这个得到的target[c_x,c_y,w,h]，其中c_x、c_y是以上一帧的pos为(0,0)的坐标(或者说相对偏移)
         target = box_pred[best_pscore_id, :] / scale_x
@@ -127,7 +141,15 @@ class HRSiamRPNTracker():
         #                 config.max_scale * self.origin_target_sz[0])
         # res_h = np.clip( target[3] , config.min_scale * self.origin_target_sz[1],
         #                 config.max_scale * self.origin_target_sz[1])
-        """---------------------------------------------------------"""
+        """------------------更新卡尔曼滤波器-------------------------"""
+        
+        res_a = res_w/res_h
+        self.mean,self.covariance = self.kf.predict(self.mean,self.covariance)
+        self.mean,self.covariance = self.kf.update(self.mean,self.covariance,[res_x,res_y,res_a,res_h])
+        res_x = self.mean[0]
+        res_y = self.mean[1]
+        res_w = self.mean[2]*self.mean[3]
+        res_h = self.mean[3]
 
         """-------------更新目标信息：中心、宽、高------------"""
         #更新目标中心点坐标、更新目标宽高

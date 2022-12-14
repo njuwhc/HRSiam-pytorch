@@ -9,6 +9,7 @@ import glob
 from itertools import islice
 from siamrpn import HRSiamRPNTracker
 import numpy as np
+import torch
 
 
 if __name__=='__main__':
@@ -28,5 +29,6 @@ if __name__=='__main__':
 
 
     net_path = 'siamrpn_otb_1.pth'
-    tracker = HRSiamRPNTracker(net_path)
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+    tracker = HRSiamRPNTracker(net_path,device)
     tracker.track(img_files, anno[0], visualize=True)

@@ -15,10 +15,10 @@ from siamrpn.utils import generate_anchors, get_exemplar_image, get_instance_ima
 torch.set_num_threads(1)
 
 class HRSiamRPNTracker():
-    def __init__(self, model_path):
+    def __init__(self, model_path,device='cpu'):
         self.name='HRSiamRPN'
         #加载训练好的模型
-        self.model = HRSiamRPNNet()
+        self.model = HRSiamRPNNet(device=device)
         checkpoint = torch.load(model_path)
         if 'model' in checkpoint.keys():
             self.model.load_state_dict(torch.load(model_path)['model'])

@@ -120,4 +120,4 @@ def train(data_dir, net_path=None):
 os.environ["CUDA_VISIBLE_DEVICES"] = "0" #多卡情况下默认多卡训练,如果想单卡训练,设置为"0"
 
 if __name__ == '__main__':
-    train('/home/wanghaochen/Download/datasets/otb')
+    train('otb')

@@ -371,7 +371,8 @@ def show_image(img, boxes=None, box_fmt='ltwh', colors=None,
             img = cv2.rectangle(img, pt1, pt2, color.tolist(), thickness)
     
     if visualize:
-        winname = 'window_{}'.format(fig_n)
+        #winname = 'window_{}'.format(fig_n)
+        winname='windows_1'
         cv2.imshow(winname, img)
         #cv2.imwrite('/home/wanghaochen/Document/siamrpn-pytorch/result/'+winname+'.jpg',img)
         cv2.waitKey(delay)

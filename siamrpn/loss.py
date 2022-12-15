@@ -43,8 +43,8 @@ def rpn_cross_entropy_balance(input, target, num_pos, num_neg, anchors, nms_pos=
     return final_loss
 
 
-# input(batch,1805,4) target(batch,1805,4) label(16,1805),num_pos=16  ohem=False(不使用nms)
-def rpn_smoothL1(input, target, label, num_pos=16, nms_reg=None):
+# input(batch,39015,4) target(batch,39015,4) label(16,39015),num_pos=336  ohem=False(不使用nms)
+def rpn_smoothL1(input, target, label, num_pos=336, nms_reg=None):
     loss_all = []
     for batch_id in range(target.shape[0]): #遍历每张图片计算回归损失
         min_pos = min(len(np.where(label[batch_id].cpu() == 1)[0]), num_pos) #最多取16个正样本，回归只针对正样本
